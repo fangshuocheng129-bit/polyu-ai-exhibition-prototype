@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PolyU Library · AI 學生優秀作品在線展覽館（Prototype）</title>
+  <style>
+    :root {
+      --primary: #1a365d;
+      --primary-light: #2b6cb0;
+      --accent: #c53030;
+      --bg: #f7fafc;
+      --card: #ffffff;
+      --text: #1a202c;
+      --muted: #718096;
+      --border: #e2e8f0;
+      --success: #276749;
+      --radius: 12px;
+      --shadow: 0 4px 14px rgba(26, 54, 93, 0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    a { text-decoration: none; color: inherit; }
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, #2c5282 100%);
+      color: white;
+      padding: 0.8rem 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    }
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .logo { font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+    .logo span { opacity: 0.85; font-weight: 400; font-size: 0.9rem; }
+    nav { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    nav button, .lang-btn {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: white;
+      padding: 0.4rem 0.85rem;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    nav button:hover, nav button.active, .lang-btn:hover { background: rgba(255,255,255,0.28); }
+    .lang-switch { display: flex; gap: 0.3rem; }
+    .hero {
+      background: linear-gradient(160deg, #1a365d 0%, #2b6cb0 55%, #3182ce 100%);
+      color: white;
+      padding: 3rem 1.5rem 2.5rem;
+      text-align: center;
+    }
+    .hero h1 { font-size: clamp(1.6rem, 4vw, 2.2rem); margin-bottom: 0.6rem; font-weight: 700; }
+    .hero p { max-width: 640px; margin: 0 auto 1.5rem; opacity: 0.9; font-size: 1rem; }
+    .search-box {
+      max-width: 560px; margin: 0 auto; display: flex; background: white;
+      border-radius: 999px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    }
+    .search-box input { flex: 1; border: none; padding: 0.9rem 1.3rem; font-size: 0.95rem; outline: none; color: var(--text); }
+    .search-box button { background: var(--accent); color: white; border: none; padding: 0.9rem 1.5rem; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+    .search-hints { margin-top: 0.8rem; font-size: 0.82rem; opacity: 0.8; }
+    .search-hints span {
+      display: inline-block; background: rgba(255,255,255,0.15); padding: 0.2rem 0.6rem;
+      border-radius: 999px; margin: 0.2rem; cursor: pointer;
+    }
+    .search-hints span:hover { background: rgba(255,255,255,0.3); }
+    .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+    section { margin-bottom: 2.5rem; }
+    .section-title {
+      font-size: 1.25rem; font-weight: 700; color: var(--primary); margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .section-title::before { content: ""; width: 4px; height: 1.2em; background: var(--accent); border-radius: 2px; }
+    .ai-features {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;
+    }
+    .feature-card {
+      background: var(--card); border-radius: var(--radius); padding: 1.1rem; box-shadow: var(--shadow);
+      border: 1px solid var(--border); text-align: center; transition: transform 0.2s;
+    }
+    .feature-card:hover { transform: translateY(-3px); }
+    .feature-icon { font-size: 1.6rem; margin-bottom: 0.4rem; }
+    .feature-card h3 { font-size: 0.95rem; color: var(--primary); margin-bottom: 0.3rem; }
+    .feature-card p { font-size: 0.8rem; color: var(--muted); }
+    .personal-banner {
+      background: linear-gradient(90deg, #ebf8ff, #e6fffa); border: 1px solid #bee3f8;
+      border-radius: var(--radius); padding: 1rem 1.3rem; margin-bottom: 1.5rem;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.8rem;
+    }
+    .personal-banner strong { color: var(--primary); }
+    .tag {
+      display: inline-block; background: var(--primary-light); color: white; font-size: 0.75rem;
+      padding: 0.2rem 0.6rem; border-radius: 999px; margin: 0.15rem;
+    }
+    .exhibition-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; }
+    .work-card {
+      background: var(--card); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
+      border: 1px solid var(--border); cursor: pointer; transition: all 0.25s;
+    }
+    .work-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(26,54,93,0.14); }
+    .work-thumb {
+      height: 160px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex; align-items: center; justify-content: center; color: white; font-size: 2.5rem; position: relative;
+    }
+    .work-thumb.design { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .work-thumb.engineering { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .work-thumb.media { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+    .work-thumb.business { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+    .work-badge {
+      position: absolute; top: 0.6rem; right: 0.6rem; background: rgba(0,0,0,0.55);
+      color: white; font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 6px;
+    }
+    .work-body { padding: 1rem; }
+    .work-body h3 { font-size: 0.95rem; margin-bottom: 0.3rem; color: var(--primary); }
+    .work-meta { font-size: 0.78rem; color: var(--muted); margin-bottom: 0.5rem; }
+    .work-desc {
+      font-size: 0.82rem; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .ai-label {
+      display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.7rem;
+      color: var(--success); margin-top: 0.5rem; font-weight: 600;
+    }
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 200;
+      align-items: center; justify-content: center; padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: white; border-radius: 16px; max-width: 720px; width: 100%; max-height: 90vh;
+      overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .modal-header {
+      padding: 1.3rem 1.5rem 0.8rem; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: flex-start;
+    }
+    .modal-header h2 { font-size: 1.2rem; color: var(--primary); }
+    .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--muted); line-height: 1; }
+    .modal-body { padding: 1.3rem 1.5rem 1.5rem; }
+    .modal-thumb {
+      height: 200px; border-radius: 10px; margin-bottom: 1rem;
+      display: flex; align-items: center; justify-content: center; color: white; font-size: 3.5rem;
+    }
+    .ai-intro {
+      background: #f0fff4; border-left: 4px solid var(--success); padding: 0.9rem 1rem;
+      border-radius: 0 8px 8px 0; margin: 1rem 0; font-size: 0.9rem;
+    }
+    .ai-intro .label { font-size: 0.75rem; font-weight: 700; color: var(--success); margin-bottom: 0.3rem; }
+    .audio-player {
+      display: flex; align-items: center; gap: 0.8rem; background: #edf2f7;
+      padding: 0.8rem 1rem; border-radius: 10px; margin: 1rem 0;
+    }
+    .play-btn {
+      width: 42px; height: 42px; border-radius: 50%; background: var(--primary); color: white;
+      border: none; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0;
+    }
+    .play-btn.playing { background: var(--accent); }
+    .audio-info { flex: 1; }
+    .audio-info .title { font-size: 0.85rem; font-weight: 600; }
+    .audio-info .sub { font-size: 0.75rem; color: var(--muted); }
+    .progress-bar { height: 4px; background: #cbd5e0; border-radius: 2px; margin-top: 0.4rem; overflow: hidden; }
+    .progress-bar .fill { height: 100%; width: 0%; background: var(--primary-light); transition: width 0.3s; }
+    .related { margin-top: 1.2rem; }
+    .related h4 { font-size: 0.9rem; color: var(--primary); margin-bottom: 0.6rem; }
+    .related-list { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    .related-item { background: #edf2f7; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.8rem; cursor: pointer; }
+    .related-item:hover { background: #bee3f8; }
+    .curator-panel {
+      background: var(--card); border-radius: var(--radius); border: 1px solid var(--border);
+      padding: 1.3rem; box-shadow: var(--shadow);
+    }
+    .curator-panel h3 { font-size: 1rem; color: var(--primary); margin-bottom: 0.8rem; }
+    .theme-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.8rem; }
+    .theme-card {
+      background: linear-gradient(135deg, #ebf8ff, #faf5ff); border: 1px solid #bee3f8;
+      border-radius: 10px; padding: 0.9rem; cursor: pointer; transition: all 0.2s;
+    }
+    .theme-card:hover { border-color: var(--primary-light); box-shadow: 0 4px 12px rgba(43,108,176,0.15); }
+    .theme-card h4 { font-size: 0.9rem; color: var(--primary); margin-bottom: 0.3rem; }
+    .theme-card p { font-size: 0.78rem; color: var(--muted); }
+    .theme-card .count { font-size: 0.72rem; color: var(--accent); font-weight: 600; margin-top: 0.4rem; }
+    footer {
+      background: var(--primary); color: rgba(255,255,255,0.8); text-align: center;
+      padding: 1.5rem; font-size: 0.82rem; margin-top: 2rem;
+    }
+    footer strong { color: white; }
+    .proto-badge {
+      position: fixed; bottom: 1.2rem; right: 1.2rem; background: var(--accent); color: white;
+      font-size: 0.75rem; font-weight: 700; padding: 0.4rem 0.9rem; border-radius: 999px;
+      box-shadow: 0 4px 14px rgba(197,48,48,0.4); z-index: 150;
+    }
+    .toast {
+      position: fixed; bottom: 4rem; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--primary); color: white; padding: 0.7rem 1.3rem; border-radius: 10px;
+      font-size: 0.85rem; opacity: 0; transition: all 0.3s; z-index: 300; pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    @media (max-width: 600px) {
+      .hero { padding: 2rem 1rem; }
+      .container { padding: 1rem; }
+      .personal-banner { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="logo">📚 PolyU Library <span>AI 學生優秀作品在線展覽館</span></div>
+      <nav>
+        <button class="active" onclick="showSection('home')">首頁</button>
+        <button onclick="showSection('exhibitions')">展覽</button>
+        <button onclick="showSection('curator')">AI 策展</button>
+      </nav>
+      <div class="lang-switch">
+        <button class="lang-btn active" onclick="setLang('zh')">繁</button>
+        <button class="lang-btn" onclick="setLang('en')">EN</button>
+      </div>
+    </div>
+  </header>
+  <div class="hero" id="hero">
+    <h1>發現同學的優秀作品</h1>
+    <p>以 AI 驅動的智能搜尋、語音導覽與個人化推薦，讓每件學生作品被真正看見與理解。</p>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="試試語義搜尋：例如「可持續包裝設計」或「城市孤獨感」…" />
+      <button onclick="doSearch()">智能搜尋</button>
+    </div>
+    <div class="search-hints">
+      熱門：
+      <span onclick="quickSearch('可持續設計')">可持續設計</span>
+      <span onclick="quickSearch('人機互動')">人機互動</span>
+      <span onclick="quickSearch('數據可視化')">數據可視化</span>
+      <span onclick="quickSearch('社會創新')">社會創新</span>
+    </div>
+  </div>
+  <div class="container">
+    <div class="ai-features" id="features">
+      <div class="feature-card"><div class="feature-icon">🎙️</div><h3>AI 語音導覽</h3><p>粵語／普通話／英語自動生成作品介紹語音</p></div>
+      <div class="feature-card"><div class="feature-icon">🔍</div><h3>語義 + 視覺搜尋</h3><p>不只關鍵詞，理解你想找的感覺與方向</p></div>
+      <div class="feature-card"><div class="feature-icon">🖼️</div><h3>AI 作品介紹</h3><p>自動生成深度詮釋，館員審核後上架</p></div>
+      <div class="feature-card"><div class="feature-icon">✨</div><h3>個人化推薦</h3><p>根據學科與興趣，推薦相關優秀作品</p></div>
+      <div class="feature-card"><div class="feature-icon">🗂️</div><h3>AI 策展助手</h3><p>自動分組主題並生成展覽敘事草稿</p></div>
+    </div>
+    <div class="personal-banner" id="personalBanner">
+      <div>
+        <strong>為你推薦</strong>（示範：設計學系 · 對「可持續」與「互動媒體」感興趣）
+        <div style="margin-top:0.4rem">
+          <span class="tag">產品設計</span><span class="tag">可持續</span><span class="tag">互動媒體</span>
+        </div>
+      </div>
+      <button onclick="showToast('已更新個人化偏好（Prototype 示範）')" style="background:var(--primary);color:white;border:none;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-size:0.85rem;">調整興趣</button>
+    </div>
+    <section id="section-exhibitions">
+      <div class="section-title">精選學生優秀作品</div>
+      <div class="exhibition-grid" id="workGrid"></div>
+    </section>
+    <section id="section-curator" style="display:none">
+      <div class="section-title">AI 策展助手</div>
+      <div class="curator-panel">
+        <h3>根據本年度入選作品，AI 建議以下三個展覽主題：</h3>
+        <div class="theme-cards">
+          <div class="theme-card" onclick="showToast('已載入主題「永續未來」下的作品（Prototype）')">
+            <h4>🌱 永續未來</h4>
+            <p>圍繞可持續材料、循環設計與氣候行動的跨學科作品集合。</p>
+            <div class="count">建議收錄 48 件作品</div>
+          </div>
+          <div class="theme-card" onclick="showToast('已載入主題「人與科技」下的作品（Prototype）')">
+            <h4>🤖 人與科技</h4>
+            <p>探索人機互動、AI 倫理與數碼生活經驗的設計與研究作品。</p>
+            <div class="count">建議收錄 62 件作品</div>
+          </div>
+          <div class="theme-card" onclick="showToast('已載入主題「城市敘事」下的作品（Prototype）')">
+            <h4>🏙️ 城市敘事</h4>
+            <p>以香港與亞洲城市為背景的空間、社會與文化觀察創作。</p>
+            <div class="count">建議收錄 37 件作品</div>
+          </div>
+        </div>
+        <p style="margin-top:1rem;font-size:0.85rem;color:var(--muted);">※ 以上主題與敘事由 AI 根據作品元數據自動生成草稿，最終由館員審核與調整後上架。</p>
+      </div>
+    </section>
+  </div>
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <h2 id="modalTitle">作品標題</h2>
+          <div class="work-meta" id="modalMeta" style="margin-top:0.3rem"></div>
+        </div>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-thumb" id="modalThumb">🎨</div>
+        <div class="ai-intro">
+          <div class="label">🤖 AI 生成作品介紹（館員已審核）</div>
+          <div id="modalIntro"></div>
+        </div>
+        <div class="audio-player">
+          <button class="play-btn" id="playBtn" onclick="toggleAudio()">▶</button>
+          <div class="audio-info">
+            <div class="title">AI 語音導覽 · 粵語</div>
+            <div class="sub">約 45 秒 · 可切換英語／普通話</div>
+            <div class="progress-bar"><div class="fill" id="progressFill"></div></div>
+          </div>
+        </div>
+        <div class="related">
+          <h4>為你推薦的相關作品</h4>
+          <div class="related-list" id="relatedList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <div class="proto-badge">PROTOTYPE 演示版</div>
+  <footer>
+    <strong>香港理工大學圖書館</strong> · AI 在線展覽及互動網站計劃書 · Prototype<br />
+    一次性開發預算 HK$80,000 · 首年營運上限 HK$20,000 · 顧問團隊 5 人
+  </footer>
+  <script>
+    const works = [
+      {id:1,title:"循環包裝系統：從咖啡渣到保護材料",author:"陳同學 · 產品設計",year:"2025",category:"design",icon:"📦",desc:"利用本地咖啡渣研發可生物降解緩衝包裝，減少電子商務的塑膠使用。",intro:"本作品針對電子商務包裝浪費問題，將香港本地咖啡店的廢渣轉化為具緩衝性能的生物基材料。設計涵蓋材料配方、結構優化與小型生產流程，體現應用導向的可持續產品思維。作品在材料實驗與實際保護性能測試上表現突出，適合作為跨學科（設計 × 材料科學）的教學案例。",related:["城市農耕容器設計","可重複使用餐具系統","廢棄紡織再造家具"]},
+      {id:2,title:"情緒感知互動燈具",author:"李同學 · 互動媒體",year:"2025",category:"media",icon:"💡",desc:"透過聲音與光線回應用戶情緒狀態的家居燈具原型。",intro:"作品探索情緒計算與日常物件的結合。系統以麥克風與簡易生理訊號輸入估計用戶當下情緒傾向，並透過色溫、亮度與微動態回饋營造相應氛圍。重點不在精準情緒識別，而在「被理解」的主觀體驗，為人機互動設計提供了細膩的敘事方向。",related:["語音日記 App 介面","療癒型桌遊設計","沉浸式聲音裝置"]},
+      {id:3,title:"港鐵人流預測儀表板",author:"王同學 · 數據科學",year:"2025",category:"engineering",icon:"📊",desc:"結合公開數據與機器學習的港鐵車站擁擠度可視化工具。",intro:"本作品整合港鐵公開乘客數據與時間序列模型，預測主要轉車站在不同時段的擁擠程度，並以清晰儀表板呈現。介面針對通勤者與規劃者兩類用戶設計，兼顧即時查詢與趨勢分析。作品展現工程與設計思維的結合，具實際應用潛力。",related:["巴士到站預測優化","校園空間使用熱圖","交通碳排放估算工具"]},
+      {id:4,title:"長者友善藥盒重設計",author:"張同學 · 設計工程",year:"2024",category:"design",icon:"💊",desc:"針對視力與手指靈活度下降長者的分劑藥盒與提醒系統。",intro:"透過田野訪談與可用性測試，重新設計分劑藥盒的開啟方式、字體對比與觸覺回饋，並結合簡易語音提醒模組。作品強調「低科技、高同理」的設計哲學，避免過度數位化，真正貼近目標使用者的生活情境。",related:["醫院導視系統優化","輔具租借平台介面","社區健康記錄本"]},
+      {id:5,title:"短視頻敘事與品牌信任實驗",author:"林同學 · 傳理學",year:"2025",category:"business",icon:"🎬",desc:"研究不同敘事結構如何影響年輕消費者對本地品牌的信任感。",intro:"本作品結合內容分析與實驗法，探討短視頻中「創辦人故事」「產品功能」「用戶見證」三種敘事對品牌信任的影響差異。成果為本地中小企的內容策略提供實證參考，同時展現商科與媒體研究的跨界可能。",related:["社群媒體情緒分析","本地品牌視覺識別","消費者決策旅程地圖"]},
+      {id:6,title:"可折疊防洪屏障原型",author:"黃同學 · 土木與環境工程",year:"2025",category:"engineering",icon:"🌊",desc:"針對低窪地區快速部署的輕量防洪屏障結構設計。",intro:"作品回應極端天氣下城市防洪需求，提出可快速組裝、收納的模組化屏障。結構計算與材料選擇兼顧強度、重量與成本，並完成縮比原型測試。體現工程專業對社會韌性議題的直接貢獻。",related:["海綿城市雨水收集","坡地監測感測網絡","災害疏散路徑優化"]}
+    ];
+    let audioPlaying = false, audioInterval = null;
+    function renderWorks(list = works) {
+      document.getElementById('workGrid').innerHTML = list.map(w => `
+        <div class="work-card" onclick="openModal(${w.id})">
+          <div class="work-thumb ${w.category}">${w.icon}<span class="work-badge">${w.year}</span></div>
+          <div class="work-body">
+            <h3>${w.title}</h3>
+            <div class="work-meta">${w.author}</div>
+            <div class="work-desc">${w.desc}</div>
+            <div class="ai-label">✓ AI 介紹已生成 · 可聽語音導覽</div>
+          </div>
+        </div>`).join('');
+    }
+    function openModal(id) {
+      const w = works.find(x => x.id === id); if (!w) return;
+      document.getElementById('modalTitle').textContent = w.title;
+      document.getElementById('modalMeta').textContent = w.author + ' · ' + w.year;
+      document.getElementById('modalThumb').className = 'modal-thumb ' + w.category;
+      document.getElementById('modalThumb').textContent = w.icon;
+      document.getElementById('modalIntro').textContent = w.intro;
+      document.getElementById('relatedList').innerHTML = w.related.map(r =>
+        `<div class="related-item" onclick="showToast('跳轉至「'+r+'」（Prototype 示範）')">${r}</div>`).join('');
+      document.getElementById('modal').classList.add('open'); resetAudio();
+    }
+    function closeModal() { document.getElementById('modal').classList.remove('open'); resetAudio(); }
+    document.getElementById('modal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+    function toggleAudio() {
+      const btn = document.getElementById('playBtn'), fill = document.getElementById('progressFill');
+      if (audioPlaying) { resetAudio(); showToast('語音導覽已暫停'); return; }
+      audioPlaying = true; btn.textContent = '❚❚'; btn.classList.add('playing');
+      let progress = 0;
+      audioInterval = setInterval(() => {
+        progress += 2; fill.style.width = progress + '%';
+        if (progress >= 100) { resetAudio(); showToast('語音導覽播放完畢'); }
+      }, 200);
+      showToast('正在播放 AI 粵語語音導覽…');
+    }
+    function resetAudio() {
+      audioPlaying = false; clearInterval(audioInterval);
+      document.getElementById('playBtn').textContent = '▶';
+      document.getElementById('playBtn').classList.remove('playing');
+      document.getElementById('progressFill').style.width = '0%';
+    }
+    function doSearch() {
+      const q = document.getElementById('searchInput').value.trim();
+      if (!q) { showToast('請輸入搜尋內容'); return; }
+      const keywords = q.toLowerCase();
+      const filtered = works.filter(w =>
+        w.title.includes(q) || w.desc.includes(q) || w.intro.includes(q) || w.author.includes(q) ||
+        w.related.some(r => r.includes(q)) ||
+        ((keywords.includes('可持續') || keywords.includes('sustain')) && w.category === 'design') ||
+        ((keywords.includes('數據') || keywords.includes('data')) && w.category === 'engineering')
+      );
+      renderWorks(filtered.length ? filtered : works);
+      showToast(filtered.length ? '語義搜尋「'+q+'」：找到 '+filtered.length+' 件相關作品' : '未找到高度相關結果，已顯示全部作品（Prototype）');
+      showSection('exhibitions');
+    }
+    function quickSearch(term) { document.getElementById('searchInput').value = term; doSearch(); }
+    document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+    function showSection(name) {
+      document.getElementById('section-exhibitions').style.display = (name === 'exhibitions' || name === 'home') ? 'block' : 'none';
+      document.getElementById('section-curator').style.display = name === 'curator' ? 'block' : 'none';
+      document.getElementById('features').style.display = name === 'home' ? 'grid' : 'none';
+      document.getElementById('personalBanner').style.display = (name === 'home' || name === 'exhibitions') ? 'flex' : 'none';
+      document.getElementById('hero').style.display = name === 'home' ? 'block' : 'none';
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      const map = { home: 0, exhibitions: 1, curator: 2 };
+      if (map[name] !== undefined) document.querySelectorAll('nav button')[map[name]].classList.add('active');
+      if (name === 'exhibitions' || name === 'home') renderWorks();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function setLang(lang) {
+      document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      showToast(lang === 'zh' ? '已切換至繁體中文' : 'Switched to English (UI demo only)');
+    }
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+    renderWorks();
+  </script>
+</body>
+</html>
